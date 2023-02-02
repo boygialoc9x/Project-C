@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../platform/ZYMacros.h"
+#include "ZyUwU/platform/ZYMacros.h"
 #include <iostream>
 NS_ZY_BEGIN
 

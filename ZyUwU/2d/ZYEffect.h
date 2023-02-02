@@ -1,6 +1,6 @@
 #pragma once
 #include "cocos2d.h"
-#include "../platform/ZYMacros.h"
+#include "ZyUwU/platform/ZYMacros.h"
 #include "ZYSprite.h"
 
 NS_ZY_BEGIN

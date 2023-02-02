@@ -8,29 +8,29 @@
 #include "cocos2d.h"
 
 //math
-#include "math/ZYFraction.h"
-#include "math/SmartAlgorithm.h"
+#include "ZyUwU/math/ZYFraction.h"
+#include "ZyUwU/math/SmartAlgorithm.h"
 
 //gacha
-#include "gacha/ZYGacha.h"
+#include "ZyUwU/gacha/ZYGacha.h"
 
-//macros
-#include "platform/ZYMacros.h"
+//platform
+#include "ZyUwU/platform/ZYMacros.h"
 
 //2d
-#include "2d/ZYSprite.h"
-#include "2d/ZYEffect.h"
+#include "ZyUwU/2d/ZYSprite.h"
+#include "ZyUwU/2d/ZYEffect.h"
+#include "ZyUwU/2d/ZYLabel.h"
 
 //base
-#include "base/ZYDirector.h"
-#include "base/ZYConstant.h"
+#include "ZyUwU/base/ZYDirector.h"
+#include "ZyUwU/base/ZYSupport.h"
 
 //database
-#include "data-manager/ZYDatabase.h"
+#include "ZyUwU/data-manager/ZYDatabase.h"
 #include "data-manager/json/single_include/nlohmann/json.hpp"
 
 //audio
-#include "audio/ZYAudio.h"
 
 NS_ZY_BEGIN
 

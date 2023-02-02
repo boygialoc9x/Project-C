@@ -9,7 +9,7 @@ Fraction::Fraction(int nNumerator, int nDenominator)
 {
     this->m_nDenominator = nDenominator;
     this->m_nNumerator = nNumerator;
-    if(!isValid())
+   if(!isValid())
     {
         this->m_nNumerator = DEFAULT.m_nNumerator;
         this->m_nDenominator = DEFAULT.m_nDenominator;
@@ -32,7 +32,18 @@ Fraction::Fraction(const Fraction& f)
     this->setMemory();
 }
 
+Fraction::Fraction(float fNum) : Fraction(Fraction::toFraction(fNum))
+{
+}
 //Public
+std::string Fraction::toString()
+{
+    std::string sToString;
+    sToString = ZYSupport::getInstance()->numberToString(this->m_nNumerator);
+    sToString += "/";
+    sToString += ZYSupport::getInstance()->numberToString(this->m_nDenominator);
+    return sToString;
+}
 void Fraction::shortCut()
 {
     int first, second;
@@ -55,7 +66,7 @@ void Fraction::shortCut()
     this->m_nDenominator /= second;
 }
 
-void Fraction::reduceFraction(Fraction &f, bool bIsShortCut)
+void Fraction::reduceFractionToCommonDenominator(Fraction &f, bool bIsShortCut)
 {
     if (!f.isValid()) return;
     if (bIsShortCut)
@@ -83,6 +94,12 @@ float Fraction::toFloat()
 }
 
 //Static
+Fraction Fraction::clone(Fraction cClone, bool bIsShortCut)
+{
+  Fraction f(cClone);
+  if(bIsShortCut) f.shortCut();
+  return f;
+}
 Fraction Fraction::fastShortCut(int nNumerator, int nDenominator)
 {
     Fraction scF(nNumerator, nDenominator);
@@ -147,16 +164,22 @@ float Fraction::toFloat(Fraction f)
 {
     return f.toFloat();
 }
-
+float Fraction::toFloat(int nNumerator, int nDenominator)
+{
+    Fraction f(nNumerator, nDenominator);
+    return f.toFloat();
+}
 Fraction Fraction::toFraction(float fNumber)
 {
+    if( ZYSupport::getInstance()->isInt(fNumber) ) return Fraction((int)fNumber, 1);
+
     float fIntegral = std::floor(fNumber);
     float fFrac = fNumber - fIntegral;
 
-    int nGCD = SmartAlgorithm::findGCD(round(fFrac * MAXRATE), MAXRATE);
+    int nGCD = SmartAlgorithm::findGCD(round(fFrac * sgc_nMaxRateDenominator), sgc_nMaxRateDenominator);
 
-    int nDenominator = MAXRATE/nGCD;
-    int nNumerator = round(fFrac * MAXRATE)  / nGCD;
+    int nDenominator = sgc_nMaxRateDenominator/nGCD;
+    int nNumerator = round(fFrac * sgc_nMaxRateDenominator)  / nGCD;
 
     return Fraction(nNumerator, nDenominator);
 }
@@ -203,16 +226,17 @@ void Fraction::autoValid()
 }
 
 //
-Fraction Fraction::clone()
+Fraction Fraction::clone(bool bIsShortCut)
 {
     Fraction fraction(this->getNumerator(), this->getDenominator());
+    if(bIsShortCut) fraction.shortCut();
 
     return fraction;
 }
 
 void Fraction::add(Fraction& f, bool bIsShortCut)
 {
-    this->reduceFraction(f, bIsShortCut);
+    this->reduceFractionToCommonDenominator(f, bIsShortCut);
 
     this->setNumerator(this->getNumerator() + f.getNumerator());
 
@@ -224,7 +248,7 @@ void Fraction::add(Fraction& f, bool bIsShortCut)
 
 void Fraction::subtract(Fraction& f, bool bIsShortCut)
 {
-    this->reduceFraction(f, bIsShortCut);
+    this->reduceFractionToCommonDenominator(f, bIsShortCut);
 
     this->setNumerator(this->getNumerator() - f.getNumerator());
 
@@ -258,6 +282,14 @@ void Fraction::divide(Fraction &f, bool bIsShortCut)
     this->autoValid();
 }
 
+void Fraction::replace(Fraction &f, bool bIsShortCut)
+{
+    this->setNumerator(f.getNumerator());
+    this->setDenominator(f.getDenominator());
+    if(bIsShortCut) this->shortCut();
+    this->autoValid();
+}
+
 void Fraction::negate()
 {
     this->m_nNumerator*(-1);
@@ -277,6 +309,21 @@ Fraction Fraction::operator+=(Fraction &f)
     return *this;
 }
 
+Fraction Fraction::operator+(float f)
+{
+    Fraction result(*this);
+    Fraction fraction = Fraction::toFraction(f);
+    result.add(fraction);
+    return result;
+}
+
+Fraction Fraction::operator+=(float f)
+{
+    Fraction fraction = Fraction::toFraction(f);
+    this->add(fraction);
+    return *this;
+}
+
 Fraction Fraction::operator-(Fraction& f)
 {
     Fraction result(*this);
@@ -284,9 +331,29 @@ Fraction Fraction::operator-(Fraction& f)
     return result;
 }
 
+void Fraction::operator=(Fraction &f)
+{
+    this->replace(f);
+}
+
 Fraction Fraction::operator-=(Fraction &f)
 {
     this->subtract(f);
+    return *this;
+}
+
+Fraction Fraction::operator-(float f)
+{
+    Fraction result(*this);
+    Fraction fraction = Fraction::toFraction(f);
+    result.subtract(fraction);
+    return result;
+}
+
+Fraction Fraction::operator-=(float f)
+{
+    Fraction fraction = Fraction::toFraction(f);
+    this->subtract(fraction);
     return *this;
 }
 
@@ -302,6 +369,21 @@ Fraction Fraction::operator*(Fraction &f)
     Fraction result(*this);
     result.multiple(f);
     return result;
+}
+
+Fraction Fraction::operator*(float f)
+{
+    Fraction result(*this);
+    Fraction fraction = Fraction::toFraction(f);
+    result.multiple(fraction);
+    return result;
+}
+
+Fraction Fraction::operator*=(float f)
+{
+    Fraction fraction = Fraction::toFraction(f);
+    this->multiple(fraction);
+    return *this;
 }
 
 Fraction Fraction::operator*=(Fraction &f)
@@ -320,6 +402,21 @@ Fraction Fraction::operator/(Fraction &f)
 Fraction Fraction::operator/=(Fraction &f)
 {
     this->divide(f);
+    return *this;
+}
+
+Fraction Fraction::operator/(float f)
+{
+    Fraction result(*this);
+    Fraction fraction = Fraction::toFraction(f);
+    result.divide(fraction);
+    return result;
+}
+
+Fraction Fraction::operator/=(float f)
+{
+    Fraction fraction = Fraction::toFraction(f);
+    this->divide(fraction);
     return *this;
 }
 
@@ -347,7 +444,7 @@ bool Fraction::operator!=(Fraction &f)
 bool Fraction::operator<(Fraction& f)
 {
     bool bIs = false;
-    this->reduceFraction(f);
+    this->reduceFractionToCommonDenominator(f);
 
     if(this->getNumerator() < f.getNumerator())
         bIs = true;
@@ -361,7 +458,7 @@ bool Fraction::operator<(Fraction& f)
 bool Fraction::operator>(Fraction &f)
 {
     bool bIs = false;
-    this->reduceFraction(f);
+    this->reduceFractionToCommonDenominator(f);
 
     if(this->getNumerator() > f.getNumerator())
         bIs = true;
@@ -383,4 +480,34 @@ bool Fraction::operator<=(Fraction& f)
     return !this->operator>(f);
 }
 
+bool Fraction::operator==(float f)
+{
+    Fraction fraction = Fraction::toFraction(f);
+    return *this==fraction;
+}
+bool Fraction::operator!=(float f)
+{
+    Fraction fraction = Fraction::toFraction(f);
+    return *this!=fraction;
+}
+bool Fraction::operator<(float f)
+{
+    Fraction fraction = Fraction::toFraction(f);
+    return *this<fraction;
+}
+bool Fraction::operator>(float f)
+{
+    Fraction fraction = Fraction::toFraction(f);
+    return *this>fraction;
+}
+bool Fraction::operator<=(float f)
+{
+    Fraction fraction = Fraction::toFraction(f);
+    return *this<=fraction;
+}
+bool Fraction::operator>=(float f)
+{
+    Fraction fraction = Fraction::toFraction(f);
+    return *this>=fraction;
+}
 NS_ZY_END

@@ -3,17 +3,17 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "cocos2d.h"
-#include "../platform/ZYMacros.h"
+#include "ZyUwU/platform/ZYMacros.h"
 #include "SmartAlgorithm.h"
+#include "ZyUwU/base/ZYSupport.h"
 
 NS_ZY_BEGIN
-
-const int MAXRATE = 1000000000;
 
 class Fraction
 {
 public:
-    Fraction(int nNumerator = 0, int nDenominator = 1);
+    Fraction(int nNumerator, int nDenominator);
+    Fraction(float fNum);
     Fraction(const Fraction &f);
 public:
     /**
@@ -21,15 +21,17 @@ public:
      */
     void shortCut();
     void log();
-    Fraction clone();
-    void reduceFraction(Fraction& f, bool bIsShortCut = true);
+    Fraction clone(bool bIsShortCut = true);
+    void reduceFractionToCommonDenominator(Fraction& f, bool bIsShortCut = true);
 
     void add(Fraction& f, bool bIsShortCut = true);
     void subtract(Fraction& f, bool bIsShortCut = true);
     void multiple(Fraction& f, bool bIsShortCut = true);
     void divide(Fraction& f, bool bIsShortCut = true);
+    void replace(Fraction& f, bool bIsShortCut = true);
     void negate();
     float toFloat();
+    std::string toString();
 protected:
     void setMemory();
     void loadMemory();
@@ -43,6 +45,7 @@ public:
      * @return The shortcut fraction
      */
     static Fraction fastShortCut(int nNumerator, int nDenominator);
+    static Fraction clone(Fraction cCLone, bool bIsShortCut = true);
 
     /**
      * Get the fraction in decimal
@@ -51,6 +54,7 @@ public:
      * @return The fraction in decimal
      */
     static float toFloat(Fraction f);
+    static float toFloat(int nNumerator, int nDenominator);
 
     static Fraction toFraction(float fNumber);
 
@@ -86,16 +90,27 @@ public:
      */
     Fraction operator+(Fraction& f);
     Fraction operator+=(Fraction& f);
+    Fraction operator+(float f);
+    Fraction operator+=(float f);
 
     Fraction operator-(Fraction& f);
     Fraction operator-=(Fraction& f);
+    Fraction operator-(float f);
+    Fraction operator-=(float f);
 
     Fraction operator-();
 
+    void operator=(Fraction& f);
+
     Fraction operator*(Fraction& f);
     Fraction operator*=(Fraction& f);
+    Fraction operator*(float f);
+    Fraction operator*=(float f);
+
     Fraction operator/(Fraction& f);
     Fraction operator/=(Fraction& f);
+    Fraction operator/(float f);
+    Fraction operator/=(float f);
 
     bool operator==(Fraction& f);
     bool operator!=(Fraction& f);
@@ -103,6 +118,13 @@ public:
     bool operator>(Fraction& f);
     bool operator<=(Fraction& f);
     bool operator>=(Fraction& f);
+
+    bool operator==(float f);
+    bool operator!=(float f);
+    bool operator<(float f);
+    bool operator>(float f);
+    bool operator<=(float f);
+    bool operator>=(float f);
 public:
     typedef Fraction Frac;
 protected:
