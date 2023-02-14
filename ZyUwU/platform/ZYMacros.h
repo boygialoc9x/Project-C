@@ -278,7 +278,7 @@ __TO_STRING__ += (__TAB__ + __LOG_STRING__ + __VAR_STRING__);                   
 inline static void cleaner(__TYPE__ *pElement) \
 { \
 	CC_SAFE_DELETE(pElement); \
-} 	
+}
 
 #define GET_CLASS_ADDRESS(__TYPE__, __VARIABLE__)\
 { \
@@ -300,8 +300,7 @@ auto __loc = (ps)->getUniformLocation(name);  \
 (ps)->setTexture(__loc, idx, __v);  \
 } while(false) 
 
-
-/* Generic macros 
+/* Generic macros
 * @namespace nova
 * @{
 */
