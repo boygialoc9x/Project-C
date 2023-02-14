@@ -1,67 +1,216 @@
+#include <ZyUwU/platform/CCMacrosSupport.h>
 #include "ZYEffect.h"
 #include "../renderer/backend/Device.h"
 #include "../renderer/ccShaders.h"
+#include "ZyUwU/2d/ZYSprite.h"
 
 NS_ZY_BEGIN
 
-//ZyUwU Blur Effect
+////ZYShader
+
+//Constructor
+
+ZYEffect::ZYEffect()
+{}
+
+ZYEffect::~ZYEffect()
+{
+    CC_SAFE_RELEASE_NULL(m_pProgramState);
+}
+
+bool ZYEffect::initProgramState(const std::string &fragmentFilename)
+{
+    auto fragmentSource = CCFU_GI->getStringFromFile(CCFU_GI->fullPathForFilename(fragmentFilename));
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+    m_sFragSource = fragmentSource;
+#endif
+
+    auto program = CCDV_GI->newProgram(positionTextureColor_vert, fragmentSource.c_str());
+    return initProgramStateHelper(program);
+}
+
+bool ZYEffect::initProgramState(const std::string &vertexFilename,
+                                const std::string &fragmentFilename)
+{
+    auto vertexSource = CCFU_GI->getStringFromFile(CCFU_GI->fullPathForFilename(vertexFilename));
+    auto fragmentSource = CCFU_GI->getStringFromFile(CCFU_GI->fullPathForFilename(fragmentFilename));
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+    m_sFragSource = fragmentSource;
+#endif
+
+    auto program = CCDV_GI->newProgram(vertexSource.c_str(), fragmentSource.c_str());
+    return initProgramStateHelper(program);
+}
+
+bool ZYEffect::initProgramStateHelper(backend::Program *program)
+{
+    auto programState = new backend::ProgramState(program);
+
+    CC_SAFE_RELEASE(m_pProgramState);
+    CC_SAFE_RELEASE(program);
+
+    m_pProgramState = programState;
+
+    return m_pProgramState != nullptr;
+}
+
+////ZYBlurEffect
+
+//Constructor
+
+ZYBlurEffect::ZYBlurEffect() :
+m_fBlurRadius(3), m_fBlurSampleNumber(5)
+{
+
+}
+
+//Virtual
+
+std::string ZYBlurEffect::toString(int nTab)
+{
+    std::string ts;
+    return ts;
+}
+
+void ZYBlurEffect::log()
+{
+
+}
+
 bool ZYBlurEffect::init()
 {
-    if(!m_pSprite) return false;
-    cocos2d::Rect rect = cocos2d::Rect::ZERO;
-    rect.size = m_pSprite->getTexture()->getContentSize();
-    initWithTexture(m_pSprite->getTexture(), rect);
+    this->initProgramState("Shaders/SimpleBlur.fsh");
+
     return true;
 }
 
-bool ZYBlurEffect::initWithTexture(cocos2d::Texture2D *pTexture, const cocos2d::Rect &rect)
+void ZYBlurEffect::castTarget(ZYSprite *pSprite)
 {
-    this->m_fBlurRadius = 0;
-    if (m_pSprite->initWithTexture(pTexture, rect))
-    {
-#if CC_ENABLE_CACHE_TEXTURE_DATA
-        auto pListener = cocos2d::EventListenerCustom::create(EVENT_RENDERER_RECREATED,
-															  [this](cocos2d::EventCustom* pEvent)
-															  {
-																  this->initProgram();
-															  }
-		);
-		m_pSprite->getEventDispatcher()->addEventListenerWithSceneGraphPriority(pListener, m_pSprite);
-#endif
-        this->initProgram();
-        return true;
-    }
-    return false;
-}
-void ZYBlurEffect::initProgram()
-{
+    if(!m_pProgramState) return;
 
-    std::string sFragSource = cocos2d::FileUtils::getInstance()->getStringFromFile(
-            cocos2d::FileUtils::getInstance()->fullPathForFilename("Shaders/SimpleBlur.fsh"));
-
-    auto program = cocos2d::backend::Device::getInstance()->newProgram(cocos2d::positionTextureColor_vert, sFragSource.data());
-    auto programState = new cocos2d::backend::ProgramState(program);
-    m_pSprite->setProgramState(programState);
-    CC_SAFE_RELEASE(programState);
-    CC_SAFE_RELEASE(program);
-
-    auto size = m_pSprite->getTexture()->getContentSizeInPixels();
-
-    SET_UNIFORM(m_pSprite->getProgramState(), "resolution", size);
-    SET_UNIFORM(m_pSprite->getProgramState(), "blurRadius", m_fBlurRadius);
-    SET_UNIFORM(m_pSprite->getProgramState(), "sampleNum", 7.0f);
-    SET_UNIFORM(m_pSprite->getProgramState(), "u_PMatrix", cocos2d::Director::getInstance()->getMatrix(cocos2d::MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION));
+    Size size = pSprite->getTexture()->getContentSizeInPixels();
+    SET_UNIFORM(m_pProgramState, "resolution", size);
+    SET_UNIFORM(m_pProgramState, "blurRadius", m_fBlurRadius);
+    SET_UNIFORM(m_pProgramState, "sampleNum", m_fBlurSampleNumber);
 }
 
-void ZYBlurEffect::setBlurSampleNumber(float fNumber)
+//Public
+
+//// ZYGLOWINGBORDER
+
+//Constructor
+
+ZYOutline::ZYOutline() :
+m_fThreshold(1.75f),
+m_fRadius(0.01f),
+m_cColor(0.1f, 0.1f, 0.1f)
 {
-    this->m_fBlurSampleNumber = fNumber;
-    SET_UNIFORM(m_pSprite->getProgramState(), "sampleNum", this->m_fBlurSampleNumber);
+
 }
-void ZYBlurEffect::setBlurRadius(float fRadius)
+
+//Virtual
+
+bool ZYOutline::init()
 {
-    this->m_fBlurRadius = fRadius;
-    SET_UNIFORM(m_pSprite->getProgramState(),"blurRadius", this->m_fBlurRadius);
+    this->initProgramState("Shaders/SimpleOutline.fsh");
+    SET_UNIFORM(m_pProgramState, "u_outlineColor", m_cColor);
+    SET_UNIFORM(m_pProgramState, "u_radius", m_fRadius);
+    SET_UNIFORM(m_pProgramState, "u_threshold", m_fThreshold);
+    return true;
+}
+
+std::string ZYOutline::toString(int nTab)
+{
+    std::string ts;
+    return ts;
+}
+
+void ZYOutline::log() {}
+
+//Public
+
+//// GLOWING BORDER
+
+//Constructor
+
+ZYGlowingBorder::ZYGlowingBorder() :
+m_fCTime(0.5f), m_fRadius(2), m_fGTime(0.5),
+m_cColor(1.0f, 1.0f, 1.0f, 1.0f)
+{
+
+}
+
+//Virtual
+
+bool ZYGlowingBorder::init()
+{
+    this->initProgramState("Shaders/glow.fsh");
+    SET_UNIFORM(m_pProgramState, "u_ctime", m_fCTime);
+    SET_UNIFORM(m_pProgramState, "u_gtime", m_fGTime);
+    SET_UNIFORM(m_pProgramState, "u_radius", m_fRadius);
+    SET_UNIFORM(m_pProgramState, "u_outlineColor", m_cColor);
+    return true;
+}
+
+std::string ZYGlowingBorder::toString(int nTab)
+{
+    std::string ts;
+    return ts;
+}
+
+void ZYGlowingBorder::log()
+{
+
+}
+
+
+//// ZYOutline-V2
+
+//Constructor
+
+ZYOutlineV2::ZYOutlineV2() :
+m_cColor(1.0f, 1.0f, 0, 1.0f),
+m_fWidth(2),
+m_fTargetSize(0)
+{
+
+}
+
+//Virtual
+
+void ZYOutlineV2::castTarget(ZYSprite *pSprite)
+{
+    if(!m_pProgramState) return;
+    m_fTargetSize = pSprite->getContentSize().width;
+
+    auto widthPC = m_fWidth / m_fTargetSize;
+    SET_UNIFORM(m_pProgramState, "u_outlineColor", m_cColor);
+    SET_UNIFORM(m_pProgramState, "u_outlineWidth", widthPC);
+}
+
+bool ZYOutlineV2::init()
+{
+    this->initProgramState("Shaders/xOutline.vsh", "Shaders/xOutline.fsh");
+    return true;
+}
+
+std::string ZYOutlineV2::toString(int nTab)
+{
+    std::string ts;
+    return ts;
+}
+
+void ZYOutlineV2::setOutlineWidth(float fWidth)
+{
+    ZYASSERT_BREAK(m_pProgramState, "Program must not be null", );
+    m_fWidth = fWidth;
+    auto widthPC = m_fWidth / m_fTargetSize;
+    SET_UNIFORM(m_pProgramState, "u_outlineWidth", widthPC);
+}
+
+void ZYOutlineV2::log()
+{
 }
 
 NS_ZY_END

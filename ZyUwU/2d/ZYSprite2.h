@@ -5,24 +5,23 @@
 #include "ZyUwU/platform/ZYMacros.h"
 #include "ZyUwU/platform/CCMacrosSupport.h"
 #include "ZyUwU/base/ZYDirector.h"
-#include "ZYShaderHelper.h"
 
 USING_NS_CC;
 
 NS_ZY_BEGIN
 
 class ZYEffect;
-class ZYSprite : public cocos2d::Sprite, public ZYShaderHelper
+class ZYSprite : public cocos2d::Sprite
 {
 public:
 	static ZYSprite* create(const char* pFileName, bool bIsScale = true);
 	static ZYSprite* create(cocos2d::Texture2D *p);
-	//static int tupleSort(const std::tuple<ssize_t, ZYEffect*, QuadCommand> &tuple_1,
-	//					 const std::tuple<ssize_t, ZYEffect*, QuadCommand> &tuple_2)
-	//{
-	//	return std::get<0>(tuple_1) < std::get<0>(tuple_2);
-	//}
-	//static void updateUniforms(backend::ProgramState *programState);
+	static int tupleSort(const std::tuple<ssize_t, ZYEffect*, QuadCommand> &tuple_1,
+						 const std::tuple<ssize_t, ZYEffect*, QuadCommand> &tuple_2)
+	{
+		return std::get<0>(tuple_1) < std::get<0>(tuple_2);
+	}
+	static void updateUniforms(backend::ProgramState *programState);
 
 public:
 	cocos2d::Point getContentPositionWithNewAnchorPoint(cocos2d::Point cNewAnchorPoint);
@@ -63,8 +62,8 @@ public:
 
 protected:
 	cocos2d::Vec2 m_cMemoryPosition;
-	//std::vector<std::tuple<ssize_t, ZYEffect*, cocos2d::QuadCommand>> m_vEffects;
-	//ZYEffect* m_pEffect;
+	std::vector<std::tuple<ssize_t, ZYEffect*, cocos2d::QuadCommand>> m_vEffects;
+	ZYEffect* m_pEffect;
 
 private:
 	ZYSprite();

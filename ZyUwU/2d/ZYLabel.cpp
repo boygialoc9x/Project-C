@@ -1,6 +1,8 @@
 #include "ZYLabel.h"
+#include "ZYEffect.h"
 
 NS_ZY_BEGIN
+
 
 //Static
 ZYLabel::ZYLabel(cocos2d::TextHAlignment hAlignment, cocos2d::TextVAlignment vAlignment ): cocos2d::Label(hAlignment, vAlignment)
@@ -20,6 +22,20 @@ ZYLabel* ZYLabel::createWithTTF(const std::string& text, const std::string& font
     return nullptr;
 }
 
+ZYLabel* ZYLabel::createWithTTF(const TTFConfig& ttfConfig, const std::string& text,
+                                  TextHAlignment hAlignment, int maxLineWidth)
+{
+    auto ret = new (std::nothrow) ZYLabel(hAlignment);
+
+    if (ret && ret->initWithTTF(ttfConfig, text, hAlignment, maxLineWidth))
+    {
+        ret->autorelease();
+        return ret;
+    }
+
+    CC_SAFE_DELETE(ret);
+    return nullptr;
+}
 //// Public
 
 //Virtual
@@ -35,7 +51,10 @@ std::string ZYLabel::toString(int nTab)
     std::string tab = ZYSP_T(nTab);
     ts += (tab + " + Size: " + ZYSP_STS(getContentSize()));
     ts += (tab + " + Position: " + ZYSP_VTS(getPosition()));
+    ts += (tab + " + Font Size: " + ZYSP_NTS(getTTFConfig().fontSize));
     return ts;
 }
+
+// Public
 
 NS_ZY_END

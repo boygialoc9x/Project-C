@@ -7,19 +7,19 @@
 NS_ZY_BEGIN
 //Nova Sprite
 ZYSprite::ZYSprite() :
-m_cMemoryPosition(0,0)
-//m_pEffect(nullptr)
+m_cMemoryPosition(0,0),
+m_pEffect(nullptr)
 {
-	//m_vEffects.reserve(2);
+	m_vEffects.reserve(2);
 }
 
 ZYSprite::~ZYSprite()
 {
-	//for(auto &tuple: m_vEffects)
-	//{
-	//	std::get<1>(tuple)->release();
-	//}
-	//CC_SAFE_RELEASE(m_pEffect);
+	for(auto &tuple: m_vEffects)
+	{
+		std::get<1>(tuple)->release();
+	}
+	CC_SAFE_RELEASE(m_pEffect);
 }
 
 ZYSprite* ZYSprite::create(const char* pFileName, bool bIsScale)
@@ -48,18 +48,18 @@ ZYSprite* ZYSprite::create(cocos2d::Texture2D *p)
 	return nullptr;
 }
 
-//void ZYSprite::updateUniforms(backend::ProgramState *programState)
-//{
-//	float time = CCDR_GI->getTotalFrames() * CCDR_GI->getAnimationInterval();
-//
-//	Vec4 uTime(time / 10.0f, time, time * 2.0f, time * 4.0f);
-//	Vec4 sinTime(time / 8.0f, time / 4.0f, time / 2.0f, sinf(time));
-//	Vec4 cosTime(time / 8.0f, time / 4.0f, time / 2.0f, cosf(time));
-//
-//	SET_UNIFORM(programState, "u_Time", uTime);
-//	SET_UNIFORM(programState, "u_SinTime", sinTime);
-//	SET_UNIFORM(programState, "u_CosTime", cosTime);
-//}
+void ZYSprite::updateUniforms(backend::ProgramState *programState)
+{
+	float time = CCDR_GI->getTotalFrames() * CCDR_GI->getAnimationInterval();
+
+	Vec4 uTime(time / 10.0f, time, time * 2.0f, time * 4.0f);
+	Vec4 sinTime(time / 8.0f, time / 4.0f, time / 2.0f, sinf(time));
+	Vec4 cosTime(time / 8.0f, time / 4.0f, time / 2.0f, cosf(time));
+
+	SET_UNIFORM(programState, "u_Time", uTime);
+	SET_UNIFORM(programState, "u_SinTime", sinTime);
+	SET_UNIFORM(programState, "u_CosTime", cosTime);
+}
 
 //// Public
 
